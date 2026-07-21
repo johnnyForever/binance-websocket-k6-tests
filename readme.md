@@ -1,6 +1,6 @@
 # Binance WebSocket k6 Tests
 
-Performance testy pre Binance WebSocket API.
+Performance tests for Binance WebSocket API.
 
 ## Setup
 
