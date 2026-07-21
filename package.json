@@ -1,0 +1,43 @@
+{
+  "name": "binance-k6-tests",
+  "type": "module",
+  "scripts": {
+    "bundle": "webpack",
+
+    "// ": "=== ALL TESTS ===",
+    "test:all": "npm run bundle && (k6 run dist/aggTradeTest.test.js & k6 run dist/depthTest.test.js & k6 run dist/tickerTest.test.js & k6 run dist/klineTest.test.js)",
+
+    "//  ": "=== SINGLE TESTS (default profile) ===",
+    "test:aggTrade": "npm run bundle && k6 run dist/aggTradeTest.test.js",
+    "test:depth": "npm run bundle && k6 run dist/depthTest.test.js",
+    "test:ticker": "npm run bundle && k6 run dist/tickerTest.test.js",
+    "test:kline": "npm run bundle && k6 run dist/klineTest.test.js",
+
+    "//   ": "=== AGGTRADE PROFILES ===",
+    "aggTrade:smoke": "npm run bundle && k6 run -e K6_PROFILE=smoke dist/aggTradeTest.test.js",
+    "aggTrade:load": "npm run bundle && k6 run -e K6_PROFILE=load dist/aggTradeTest.test.js",
+    "aggTrade:stress": "npm run bundle && k6 run -e K6_PROFILE=stress dist/aggTradeTest.test.js",
+    "aggTrade:soak": "npm run bundle && k6 run -e K6_PROFILE=soak dist/aggTradeTest.test.js",
+
+    "//    ": "=== DEPTH PROFILES ===",
+    "depth:smoke": "npm run bundle && k6 run -e K6_PROFILE=smoke dist/depthTest.test.js",
+    "depth:load": "npm run bundle && k6 run -e K6_PROFILE=load dist/depthTest.test.js",
+
+    "//     ": "=== TICKER PROFILES ===",
+    "ticker:smoke": "npm run bundle && k6 run -e K6_PROFILE=smoke dist/tickerTest.test.js",
+    "ticker:load": "npm run bundle && k6 run -e K6_PROFILE=load dist/tickerTest.test.js",
+
+    "//      ": "=== KLINE PROFILES ===",
+    "kline:smoke": "npm run bundle && k6 run -e K6_PROFILE=smoke dist/klineTest.test.js",
+    "kline:load": "npm run bundle && k6 run -e K6_PROFILE=load dist/klineTest.test.js",
+
+    "//       ": "=== TESTNET ===",
+    "testnet:aggTrade": "npm run bundle && k6 run -e K6_ENV=testnet dist/aggTradeTest.test.js",
+    "testnet:aggTrade:load": "npm run bundle && k6 run -e K6_ENV=testnet -e K6_PROFILE=load dist/aggTradeTest.test.js"
+  },
+  "devDependencies": {
+    "webpack": "^5.88.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-glob-entries": "^1.0.1"
+  }
+}
