@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 
 export default {
   mode: "production",
-  entry: glob("./tests/*.test.js"),
+  entry: glob("./tests/**/*.test.js"),
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "[name].js",
@@ -17,7 +17,7 @@ export default {
     alias: {
       "@": path.resolve(__dirname),
     },
-    extensions: [".js"],
+    extensions: [".js", ".json"],
     mainFiles: ["index"],
   },
   externals: /^k6(\/.*)?/,

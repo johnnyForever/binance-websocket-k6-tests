@@ -2,15 +2,30 @@ import ws from "k6/ws";
 import { check } from "k6";
 import { aggTradeUrl, logConnection, logTrade, logError } from "@/utils";
 import { Counter, Trend } from "k6/metrics";
-import { buildOptions, env } from "@/config/index.js";
+import { buildOptions, wsMetrics } from "@/config";
 
 const tradesReceived = new Counter("trades_received");
 const priceValue = new Trend("btc_price");
 const url = aggTradeUrl();
 
+const { wsConnecting, checksRate, minMessages } = wsMetrics;
+const { aggTrade } = wsMetrics.streams;
+
 export const options = buildOptions({
-  trades_received: ["count>5"],
-  btc_price: ["p(95)<100000"],
+  thresholds: {
+    checks: [`rate>${checksRate}`],
+    ws_connecting: [
+      `p(50)<${wsConnecting.p50}`,
+      `p(95)<${wsConnecting.p95}`,
+      `p(99)<${wsConnecting.p99}`,
+    ],
+    ws_msgs_received: [`count>${minMessages}`],
+    trades_received: [`count>${aggTrade.minCount}`],
+    btc_price: [`p(95)<${aggTrade.btcPriceP95}`],
+  },
+  tags: {
+    type: "ws",
+  },
 });
 
 export default function () {

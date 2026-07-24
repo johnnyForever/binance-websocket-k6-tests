@@ -2,13 +2,28 @@ import ws from "k6/ws";
 import { check } from "k6";
 import { Counter } from "k6/metrics";
 import { klineUrl, logConnection, logError, logKline } from "@/utils";
-import { buildOptions, env } from "@/config/index.js";
+import { buildOptions, wsMetrics } from "@/config";
 
 const klineReceived = new Counter("kline_received");
 const url = klineUrl();
 
+const { wsConnecting, checksRate, minMessages } = wsMetrics;
+const { kline } = wsMetrics.streams;
+
 export const options = buildOptions({
-  kline_received: ["count>5"],
+  thresholds: {
+    checks: [`rate>${checksRate}`],
+    ws_connecting: [
+      `p(50)<${wsConnecting.p50}`,
+      `p(95)<${wsConnecting.p95}`,
+      `p(99)<${wsConnecting.p99}`,
+    ],
+    ws_msgs_received: [`count>${minMessages}`],
+    kline_received: [`count>${kline.minCount}`],
+  },
+  tags: {
+    type: "ws",
+  },
 });
 
 export default function () {

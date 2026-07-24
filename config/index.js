@@ -1,63 +1,94 @@
-/**
- * Configuration Loader
- */
-import { environments, testProfiles } from "@/config/environments.js";
+import envs from "@/config/envs";
+import scenarios from "@/config/scenarios";
+import metrics from "@/config/metrics";
 
-const envName = __ENV.K6_ENV || "testnet";
-const profileName = __ENV.K6_PROFILE || "smoke";
+export const envKey = __ENV.ENV || "production";
+export const scenarioKey = __ENV.PROFILE || "smoke";
 
-// Validate environment
-if (!environments[envName]) {
-  throw new Error(`Unknown environment: ${envName}.`);
-}
-
-// Validate profile
-if (!testProfiles[profileName]) {
-  throw new Error(`Unknown profile: ${profileName}.`);
-}
-
-export const env = environments[envName];
-export const profile = testProfiles[profileName];
-
-export function buildThresholds(customMetrics = {}) {
-  const t = env.thresholds;
-
-  return {
-    checks: [`rate>${t.checksRate}`],
-
-    ws_connecting: [
-      `p(50)<${t.wsConnecting.p50}`,
-      `p(95)<${t.wsConnecting.p95}`,
-      `p(99)<${t.wsConnecting.p99}`,
-    ],
-
-    ws_msgs_received: [`count>${t.minMessages}`],
-
-    ...customMetrics,
-  };
-}
-
-// Build test options
-export function buildOptions(config = {}) {
-  const { thresholds = {}, vus, duration, stages } = config;
-  
-  // Base options
-  const options = {
-    thresholds: buildThresholds(thresholds),
-    tags: {
-      env: envName,
-      profile: profileName,
-    },
-  };
-
-  if (stages || profile.stages) {
-    options.stages = stages || profile.stages;
-  } else {
-    options.vus = vus || profile.vus || 1;
-    options.duration = duration || profile.duration || "10s";
+function parsePositiveInteger(value, variableName) {
+  if (value === undefined || value === null || value === "") {
+    return undefined;
   }
 
-  return options;
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error(
+      `Invalid ${variableName} value: "${value}". Expected a positive integer.`,
+    );
+  }
+
+  return parsed;
 }
 
-export { environments, testProfiles };
+const vusFromEnv = parsePositiveInteger(__ENV.VUS, "VUS");
+
+export const envConfig = envs[envKey];
+export const scenarioConfig = scenarios[scenarioKey];
+export const metricsConfig = metrics[envKey];
+
+if (!envConfig) {
+  throw new Error(`Unknown environment: ${envKey}.`);
+}
+
+if (!scenarioConfig) {
+  throw new Error(`Unknown scenario: ${scenarioKey}.`);
+}
+
+if (!metricsConfig) {
+  throw new Error(`Missing metrics for environment: ${envKey}.`);
+}
+
+if (!metricsConfig.ws) {
+  throw new Error(`Missing WS metrics for environment: ${envKey}.`);
+}
+
+if (!metricsConfig.api) {
+  throw new Error(`Missing API metrics for environment: ${envKey}.`);
+}
+
+export const env = {
+  ...envConfig,
+};
+
+export const profile = scenarioConfig;
+export const wsMetrics = metricsConfig.ws;
+export const apiMetrics = metricsConfig.api;
+
+export function buildScenarioOptions(overrides = {}) {
+  const { vus, duration, stages } = overrides;
+  const resolvedVus = vusFromEnv !== undefined ? vusFromEnv : vus;
+
+  if (stages || scenarioConfig.stages) {
+    if (resolvedVus !== undefined) {
+      throw new Error(
+        `VUS override is not supported for staged profile "${scenarioKey}". Use a fixed-VU profile or provide custom stages.`,
+      );
+    }
+
+    return {
+      stages: stages || scenarioConfig.stages,
+    };
+  }
+
+  return {
+    vus: resolvedVus || scenarioConfig.vus || 1,
+    duration: duration || scenarioConfig.duration || "10s",
+  };
+}
+
+export function buildOptions({
+  scenarioOverrides = {},
+  thresholds = {},
+  scenario = scenarioOverrides,
+  tags = {},
+} = {}) {
+  return {
+    ...buildScenarioOptions(scenario),
+    thresholds,
+    tags: {
+      env: envKey,
+      ...tags,
+    },
+  };
+}

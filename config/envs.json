@@ -1,0 +1,14 @@
+{
+  "production": {
+    "name": "Production",
+    "baseUrl": "https://api.binance.com/api/v3",
+    "wsUrl": "wss://stream.binance.com:9443/ws",
+    "timeout": 10000
+  },
+  "testnet": {
+    "name": "Testnet",
+    "baseUrl": "https://testnet.binance.vision/api/v3",
+    "wsUrl": "wss://testnet.binance.vision/ws",
+    "timeout": 15000
+  }
+}

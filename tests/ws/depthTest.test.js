@@ -2,13 +2,28 @@ import ws from "k6/ws";
 import { check } from "k6";
 import { Counter } from "k6/metrics";
 import { depthUrl, logConnection, logError, logDepth } from "@/utils";
-import { buildOptions, env } from "@/config/index.js";
+import { buildOptions, wsMetrics } from "@/config";
 
 const depthUpdates = new Counter("depth_updates");
 const url = depthUrl();
 
+const { wsConnecting, checksRate, minMessages } = wsMetrics;
+const { depth } = wsMetrics.streams;
+
 export const options = buildOptions({
-  depth_updates: ["count>5"],
+  thresholds: {
+    checks: [`rate>${checksRate}`],
+    ws_connecting: [
+      `p(50)<${wsConnecting.p50}`,
+      `p(95)<${wsConnecting.p95}`,
+      `p(99)<${wsConnecting.p99}`,
+    ],
+    ws_msgs_received: [`count>${minMessages}`],
+    depth_updates: [`count>${depth.minCount}`],
+  },
+  tags: {
+    type: "ws",
+  },
 });
 
 export default function () {

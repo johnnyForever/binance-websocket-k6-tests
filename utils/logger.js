@@ -8,8 +8,10 @@ export function logKline(msg) {
 }
 
 export function logDepth(msg) {
-  const topBid = msg.bids[0] || ['N/A', 'N/A'];
-  const topAsk = msg.asks[0] || ['N/A', 'N/A'];
+  const bids = Array.isArray(msg.b) ? msg.b : [];
+  const asks = Array.isArray(msg.a) ? msg.a : [];
+  const topBid = bids[0] || ["N/A", "N/A"];
+  const topAsk = asks[0] || ["N/A", "N/A"];
   console.log(`[DEPTH] Bid: ${topBid[0]} (${topBid[1]}) | Ask: ${topAsk[0]} (${topAsk[1]})`);
 }
 

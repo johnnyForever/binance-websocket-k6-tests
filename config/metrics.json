@@ -1,0 +1,114 @@
+{
+  "production": {
+    "ws": {
+      "checksRate": 0.99,
+      "wsConnecting": {
+        "p50": 400,
+        "p95": 800,
+        "p99": 1000
+      },
+      "minMessages": 5,
+      "streams": {
+        "aggTrade": {
+          "minCount": 5,
+          "btcPriceP95": 100000
+        },
+        "depth": {
+          "minCount": 5
+        },
+        "kline": {
+          "minCount": 5
+        },
+        "ticker": {
+          "minCount": 5,
+          "priceChangeP95": 10
+        }
+      }
+    },
+    "api": {
+      "checksRate": 0.99,
+      "failedRate": 0.01,
+      "httpReqDuration": {
+        "p50": 500,
+        "p95": 1500,
+        "p99": 3000
+      },
+      "endpoints": {
+        "ping": {
+          "p50": 300,
+          "p95": 600,
+          "p99": 1000,
+          "maxErrors": 5
+        },
+        "time": {
+          "p50": 300,
+          "p95": 600,
+          "p99": 1000,
+          "maxErrors": 5
+        },
+        "exchangeInfo": {
+          "p50": 5000,
+          "p95": 8000,
+          "p99": 10000,
+          "maxErrors": 10
+        }
+      }
+    }
+  },
+  "testnet": {
+    "ws": {
+      "checksRate": 0.95,
+      "wsConnecting": {
+        "p50": 600,
+        "p95": 1000,
+        "p99": 2000
+      },
+      "minMessages": 10,
+      "streams": {
+        "aggTrade": {
+          "minCount": 3,
+          "btcPriceP95": 100000
+        },
+        "depth": {
+          "minCount": 3
+        },
+        "kline": {
+          "minCount": 3
+        },
+        "ticker": {
+          "minCount": 3,
+          "priceChangeP95": 15
+        }
+      }
+    },
+    "api": {
+      "checksRate": 0.95,
+      "failedRate": 0.01,
+      "httpReqDuration": {
+        "p50": 800,
+        "p95": 2500,
+        "p99": 4000
+      },
+      "endpoints": {
+        "ping": {
+          "p50": 500,
+          "p95": 1000,
+          "p99": 2000,
+          "maxErrors": 10
+        },
+        "time": {
+          "p50": 500,
+          "p95": 1000,
+          "p99": 2000,
+          "maxErrors": 10
+        },
+        "exchangeInfo": {
+          "p50": 7000,
+          "p95": 10000,
+          "p99": 12000,
+          "maxErrors": 15
+        }
+      }
+    }
+  }
+}

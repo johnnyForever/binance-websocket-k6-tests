@@ -2,15 +2,30 @@ import ws from "k6/ws";
 import { check } from "k6";
 import { Counter, Trend } from "k6/metrics";
 import { miniTickerUrl, logConnection, logError, logTicker } from "@/utils";
-import { buildOptions, env } from "@/config/index.js";
+import { buildOptions, wsMetrics } from "@/config";
 
 const tickerReceived = new Counter("ticker_received");
 const priceChange = new Trend("price_change_percent");
 const url = miniTickerUrl();
 
+const { wsConnecting, checksRate, minMessages } = wsMetrics;
+const { ticker } = wsMetrics.streams;
+
 export const options = buildOptions({
-  ticker_received: ["count>5"],
-  price_change_percent: ["p(95)<10"],
+  thresholds: {
+    checks: [`rate>${checksRate}`],
+    ws_connecting: [
+      `p(50)<${wsConnecting.p50}`,
+      `p(95)<${wsConnecting.p95}`,
+      `p(99)<${wsConnecting.p99}`,
+    ],
+    ws_msgs_received: [`count>${minMessages}`],
+    ticker_received: [`count>${ticker.minCount}`],
+    price_change_percent: [`p(95)<${ticker.priceChangeP95}`],
+  },
+  tags: {
+    type: "ws",
+  },
 });
   
 export default function () {

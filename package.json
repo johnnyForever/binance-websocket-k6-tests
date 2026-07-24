@@ -3,37 +3,30 @@
   "type": "module",
   "scripts": {
     "bundle": "webpack",
-
-    "// ": "=== ALL TESTS ===",
-    "test:all": "npm run bundle && (k6 run dist/aggTradeTest.test.js & k6 run dist/depthTest.test.js & k6 run dist/tickerTest.test.js & k6 run dist/klineTest.test.js)",
-
-    "//  ": "=== SINGLE TESTS (default profile) ===",
+    
+    "test:smoke": "npm run bundle && npm run test:ws:smoke && npm run test:api:smoke",
+    "test:smoke:ci": "npm run bundle && npm run test:ws:smoke:ci && npm run test:api:smoke:ci",
+    
+    "test:ws:smoke": "k6 run dist/aggTradeTest.test.js && k6 run dist/depthTest.test.js && k6 run dist/tickerTest.test.js && k6 run dist/klineTest.test.js",
+    "test:ws:smoke:ci": "k6 run --out json=results/aggTrade.json dist/aggTradeTest.test.js && k6 run --out json=results/depth.json dist/depthTest.test.js && k6 run --out json=results/ticker.json dist/tickerTest.test.js && k6 run --out json=results/kline.json dist/klineTest.test.js",
+    "test:ws:load": "k6 run --env PROFILE=load dist/aggTradeTest.test.js && k6 run --env PROFILE=load dist/depthTest.test.js && k6 run --env PROFILE=load dist/tickerTest.test.js && k6 run --env PROFILE=load dist/klineTest.test.js",
+    "test:ws:stress": "k6 run --env PROFILE=stress dist/aggTradeTest.test.js && k6 run --env PROFILE=stress dist/depthTest.test.js",
+    "test:ws:spike": "k6 run --env PROFILE=spike dist/aggTradeTest.test.js && k6 run --env PROFILE=spike dist/depthTest.test.js",
+    "test:ws:soak": "k6 run --env PROFILE=soak dist/aggTradeTest.test.js && k6 run --env PROFILE=soak dist/depthTest.test.js",
+    
+    "test:api:smoke": "k6 run dist/restMarketSmoke.test.js",
+    "test:api:smoke:ci": "k6 run --out json=results/restMarketSmoke.json dist/restMarketSmoke.test.js",
+    "test:api:load": "k6 run --env PROFILE=load dist/restMarketLoad.test.js",
+    "test:api:stress": "k6 run --env PROFILE=stress dist/restMarketLoad.test.js",
+    "test:api:spike": "k6 run --env PROFILE=spike dist/restMarketLoad.test.js",
+    "test:api:soak": "k6 run --env PROFILE=soak dist/restMarketLoad.test.js",
+    
     "test:aggTrade": "npm run bundle && k6 run dist/aggTradeTest.test.js",
     "test:depth": "npm run bundle && k6 run dist/depthTest.test.js",
     "test:ticker": "npm run bundle && k6 run dist/tickerTest.test.js",
     "test:kline": "npm run bundle && k6 run dist/klineTest.test.js",
-
-    "//   ": "=== AGGTRADE PROFILES ===",
-    "aggTrade:smoke": "npm run bundle && k6 run -e K6_PROFILE=smoke dist/aggTradeTest.test.js",
-    "aggTrade:load": "npm run bundle && k6 run -e K6_PROFILE=load dist/aggTradeTest.test.js",
-    "aggTrade:stress": "npm run bundle && k6 run -e K6_PROFILE=stress dist/aggTradeTest.test.js",
-    "aggTrade:soak": "npm run bundle && k6 run -e K6_PROFILE=soak dist/aggTradeTest.test.js",
-
-    "//    ": "=== DEPTH PROFILES ===",
-    "depth:smoke": "npm run bundle && k6 run -e K6_PROFILE=smoke dist/depthTest.test.js",
-    "depth:load": "npm run bundle && k6 run -e K6_PROFILE=load dist/depthTest.test.js",
-
-    "//     ": "=== TICKER PROFILES ===",
-    "ticker:smoke": "npm run bundle && k6 run -e K6_PROFILE=smoke dist/tickerTest.test.js",
-    "ticker:load": "npm run bundle && k6 run -e K6_PROFILE=load dist/tickerTest.test.js",
-
-    "//      ": "=== KLINE PROFILES ===",
-    "kline:smoke": "npm run bundle && k6 run -e K6_PROFILE=smoke dist/klineTest.test.js",
-    "kline:load": "npm run bundle && k6 run -e K6_PROFILE=load dist/klineTest.test.js",
-
-    "//       ": "=== TESTNET ===",
-    "testnet:aggTrade": "npm run bundle && k6 run -e K6_ENV=testnet dist/aggTradeTest.test.js",
-    "testnet:aggTrade:load": "npm run bundle && k6 run -e K6_ENV=testnet -e K6_PROFILE=load dist/aggTradeTest.test.js"
+    
+    "test:testnet:smoke": "npm run bundle && k6 run --env ENV=testnet dist/aggTradeTest.test.js && k6 run --env ENV=testnet dist/restMarketSmoke.test.js"
   },
   "devDependencies": {
     "webpack": "^5.88.0",
