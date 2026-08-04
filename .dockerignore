@@ -1,0 +1,8 @@
+node_modules/
+dist/
+results/
+.git/
+.github/
+*.log
+*.md
+LICENSE

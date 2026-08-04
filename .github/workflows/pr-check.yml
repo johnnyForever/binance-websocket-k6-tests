@@ -1,4 +1,4 @@
-name: PR or push to github
+name: PR or push to github - smoke test
 on:
   push:
     branches: [main]
@@ -12,29 +12,40 @@ defaults:
 
 jobs:
   test:
-    timeout-minutes: 20
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Build Docker image
+        run: docker build -t k6-tests .
 
-      - name: Build tests
-        run: npm run bundle
+      - name: Create results directory
+        run: mkdir -p results
 
-      - name: Install k6
+      - name: Run k6 smoke tests
         run: |
-          curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
-          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-          sudo apt-get update
-          sudo apt-get install k6
+          docker run --rm \
+            -e ENV=production \
+            -e PROFILE=smoke \
+            -v $(pwd)/results:/tests/results \
+            k6-tests \
+            --out json=/tests/results/aggTrade.json dist/aggTradeTest.test.js
+            
+          docker run --rm \
+            -e ENV=production \
+            -e PROFILE=smoke \
+            -v $(pwd)/results:/tests/results \
+            k6-tests \
+            --out json=/tests/results/restMarketSmoke.json dist/restMarketSmoke.test.js
 
-      - name: Run k6 tests
-        run: npm run test:all
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-results
+          path: results/

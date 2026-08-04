@@ -1,0 +1,84 @@
+services:
+  # Smoke tests - quick validation
+  k6-smoke:
+    build: .
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        k6 run dist/aggTradeTest.test.js &&
+        k6 run dist/restMarketSmoke.test.js
+    environment:
+      - ENV=production
+      - PROFILE=smoke
+
+  # Load tests - sustained traffic
+  k6-load:
+    build: .
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        k6 run dist/aggTradeTest.test.js &&
+        k6 run dist/depthTest.test.js &&
+        k6 run dist/tickerTest.test.js &&
+        k6 run dist/klineTest.test.js &&
+        k6 run dist/restMarketLoad.test.js
+    environment:
+      - ENV=production
+      - PROFILE=load
+
+  # Stress tests - find breaking point
+  k6-stress:
+    build: .
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        k6 run dist/aggTradeTest.test.js &&
+        k6 run dist/depthTest.test.js &&
+        k6 run dist/tickerTest.test.js &&
+        k6 run dist/klineTest.test.js &&
+        k6 run dist/restMarketLoad.test.js
+    environment:
+      - ENV=production
+      - PROFILE=stress
+
+  # Spike tests - sudden traffic burst
+  k6-spike:
+    build: .
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        k6 run dist/aggTradeTest.test.js &&
+        k6 run dist/depthTest.test.js &&
+        k6 run dist/tickerTest.test.js &&
+        k6 run dist/klineTest.test.js &&
+        k6 run dist/restMarketLoad.test.js
+    environment:
+      - ENV=production
+      - PROFILE=spike
+
+  # Soak tests - long duration stability
+  k6-soak:
+    build: .
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        k6 run dist/aggTradeTest.test.js &&
+        k6 run dist/depthTest.test.js &&
+        k6 run dist/tickerTest.test.js &&
+        k6 run dist/klineTest.test.js &&
+        k6 run dist/restMarketLoad.test.js
+    environment:
+      - ENV=production
+      - PROFILE=soak
+
+  # Testnet smoke
+  k6-testnet:
+    build: .
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        k6 run dist/aggTradeTest.test.js &&
+        k6 run dist/restMarketSmoke.test.js
+    environment:
+      - ENV=testnet
+      - PROFILE=smoke
