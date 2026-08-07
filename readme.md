@@ -134,9 +134,6 @@ npm run test:depth
 
 # With custom parameters
 k6 run --env ENV=production --env PROFILE=smoke dist/aggTradeTest.test.js
-
-# Load test with custom VUS
-k6 run --env PROFILE=load --env VUS=10 dist/restMarketLoad.test.js
 ```
 
 ### Running via Docker Compose (locally)

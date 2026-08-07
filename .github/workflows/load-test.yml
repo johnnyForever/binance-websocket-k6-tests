@@ -10,10 +10,6 @@ on:
         options:
           - production
           - testnet
-      vus:
-        description: 'Number of virtual users (optional override)'
-        required: false
-        type: number
 
 defaults:
   run:
@@ -68,14 +64,13 @@ jobs:
         run: docker load -i /tmp/k6-tests.tar
 
       - name: Create results directory
-        run: mkdir -p results
+        run: mkdir -p results && chmod 777 results
 
       - name: Run k6 load test - ${{ matrix.test }}
         run: |
           docker run --rm \
             -e ENV=${{ inputs.environment }} \
             -e PROFILE=load \
-            ${{ inputs.vus && format('-e VUS={0}', inputs.vus) || '' }} \
             -v $(pwd)/results:/tests/results \
             k6-tests:latest \
             --out json=/tests/results/${{ matrix.test }}-load.json \
