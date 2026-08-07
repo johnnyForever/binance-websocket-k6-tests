@@ -1,0 +1,84 @@
+name: Soak Tests (On-Demand)
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - testnet
+
+defaults:
+  run:
+    shell: "bash"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push to local registry
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: k6-tests:latest
+          outputs: type=docker,dest=/tmp/k6-tests.tar
+
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp/k6-tests.tar
+          retention-days: 1
+
+  soak-test:
+    needs: build
+    timeout-minutes: 120
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test:
+          - aggTradeTest
+          - depthTest
+          - tickerTest
+          - klineTest
+          - restMarketLoad
+    steps:
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp
+
+      - name: Load Docker image
+        run: docker load -i /tmp/k6-tests.tar
+
+      - name: Create results directory
+        run: mkdir -p results
+
+      - name: Run k6 soak test - ${{ matrix.test }}
+        run: |
+          docker run --rm \
+            -e ENV=${{ inputs.environment }} \
+            -e PROFILE=soak \
+            -v $(pwd)/results:/tests/results \
+            k6-tests:latest \
+            --out json=/tests/results/${{ matrix.test }}-soak.json \
+            dist/${{ matrix.test }}.test.js
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-soak-${{ matrix.test }}-${{ github.run_number }}
+          path: results/
