@@ -14,10 +14,7 @@ jobs:
   test:
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      checks: write
-      pull-requests: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -29,7 +26,7 @@ jobs:
         run: docker build -t k6-tests .
 
       - name: Create results directory
-        run: mkdir -p results
+        run: mkdir -p results && chmod 777 results
 
       - name: Run k6 smoke tests
         run: |
